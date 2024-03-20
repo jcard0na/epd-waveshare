@@ -88,6 +88,21 @@ where
         self.wait_until_idle(spi, delay)?;
         Ok(())
     }
+
+    /// Variant of display_frame that is required for partial updates 
+    pub fn display_partial_frame(&mut self, spi: &mut SPI, delay: &mut DELAY) -> Result<(), SPI::Error> {
+        self.wait_until_idle(spi, delay)?;
+        self.interface
+            .cmd_with_data(spi, Command::DisplayUpdateControl2, &[0xFF])?;
+
+        // MASTER Activation should not be interupted to avoid currption of panel images
+        // therefore a terminate command is send
+        self.interface.cmd(spi, Command::MasterActivation)?;
+        self.interface.cmd(spi, Command::Nop)?;
+        self.wait_until_idle(spi, delay)?;
+        Ok(())
+    }
+
 }
 
 impl<SPI, CS, BUSY, DC, RST, E, DELAY> WaveshareDisplay<SPI, CS, BUSY, DC, RST, DELAY>
@@ -152,6 +167,8 @@ where
         self.use_full_frame(spi, delay)?;
         self.interface
             .cmd_with_data(spi, Command::WriteRam, buffer)?;
+        self.interface
+            .cmd_with_data(spi, Command::WriteRam2, buffer)?;
         Ok(())
     }
 
@@ -166,6 +183,7 @@ where
         width: u32,
         height: u32,
     ) -> Result<(), SPI::Error> {
+        self.interface.reset(delay, 10_000, 10_000);
         self.wait_until_idle(spi, delay)?;
         self.set_ram_area(spi, delay, x, y, x + width, y + height)?;
         self.set_ram_counter(spi, delay, x, y)?;
