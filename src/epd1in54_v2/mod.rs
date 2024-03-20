@@ -323,7 +323,7 @@ where
         self.interface.cmd_with_data(
             spi,
             Command::SetRamXAddressStartEndPosition,
-            &[(start_x >> 3) as u8, (end_x >> 3) as u8],
+            &[(start_x >> 3) as u8, (end_x >> 3) as u8 - 1],
         )?;
 
         // 2 Databytes: A[7:0] & 0..A[8] for each - start and end
