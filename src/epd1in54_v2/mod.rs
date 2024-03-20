@@ -185,7 +185,7 @@ where
     ) -> Result<(), SPI::Error> {
         self.interface.reset(delay, 10_000, 10_000);
         self.wait_until_idle(spi, delay)?;
-        self.set_ram_area(spi, delay, x, y, x + width, y + height)?;
+        self.set_ram_area(spi, delay, x, y, x + width - 1, y + height - 1)?;
         self.set_ram_counter(spi, delay, x, y)?;
 
         self.interface
@@ -323,7 +323,7 @@ where
         self.interface.cmd_with_data(
             spi,
             Command::SetRamXAddressStartEndPosition,
-            &[(start_x >> 3) as u8, (end_x >> 3) as u8 - 1],
+            &[(start_x >> 3) as u8, ((end_x +  1) >> 3) as u8 - 1],
         )?;
 
         // 2 Databytes: A[7:0] & 0..A[8] for each - start and end
